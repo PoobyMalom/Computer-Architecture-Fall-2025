@@ -1,0 +1,39 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Sun Oct  5 23:47:38 2025
+[*]
+[dumpfile] "/home/toby/comp-arch/mp2/top.vcd"
+[dumpfile_mtime] "Sun Oct  5 22:40:49 2025"
+[dumpfile_size] 1407531257
+[savefile] "/home/toby/comp-arch/mp2/tb.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] 1877 1181
+*-29.000000 488000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top_tb.
+[treeopen] top_tb.u0.
+[treeopen] top_tb.u0.u2.
+[sst_width] 297
+[signals_width] 264
+[sst_expanded] 1
+[sst_vpaned_height] 158
+@8024
+[color] 1
+top_tb.u0.pwm_value_r[10:0]
+@20000
+-
+-
+@8024
+top_tb.u0.pwm_value_g[10:0]
+@20000
+-
+-
+@8024
+[color] 5
+top_tb.u0.pwm_value_b[10:0]
+@20001
+-
+@20000
+-
+[pattern_trace] 1
+[pattern_trace] 0
