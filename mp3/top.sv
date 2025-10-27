@@ -28,6 +28,15 @@ module top(
     logic ws2812b_out;
     logic write;
 
+    logic address_select; 
+
+    always_ff @(posedge clk) begin
+    if (done_calculating)
+        address_select <= 1'b1;
+    else if (start_calculating)
+        address_select <= 1'b0;
+    end
+
     // Instance sample memory for blue channel
     memory #(
         .INIT_FILE      ("states/white.txt")
@@ -58,7 +67,7 @@ module top(
         .pixel                  (matrix_address)
     );
 
-    assign address = !start_calculating ? matrix_address : game_address;
+    assign address = address_select ? matrix_address : game_address;
 
     // Instance the WS2812B output driver
     ws2812b matrix (

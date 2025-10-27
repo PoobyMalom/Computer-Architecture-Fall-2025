@@ -52,8 +52,9 @@ module updater (
   wire start_read   = (state == READ)  && (prev_state != READ);
   wire start_calc   = (state == CALC)  && (prev_state != CALC);
   wire start_write  = (state == WRITE) && (prev_state != WRITE);
+  wire write        = (state == WRITE) && (prev_state == WRITE);
 
-  assign start_writing = (state == WRITE);
+  assign start_writing = write;
   assign done_calculating = ((i_calc == 3'b111) && (j_calc == 3'b111));
   assign done_writing = (state == IDLE)  && (prev_state != IDLE);
 
@@ -112,13 +113,24 @@ module updater (
 
   always_ff @(posedge clk) begin
     if (state == READ) begin
-      board_state[(j * 8) + i] <= (cell_state != 8'd0);
+      board_state[board_address] <= (cell_state != 8'd0);
     end
   end
 
   logic temp_cell_next_state;
   logic temp_cell_state;
   logic inside_dead_cell_case;
+
+  // always_ff @(posedge clk) begin
+  //   if (state == CALC) begin
+  //     if (i_calc == 3'd7) begin
+  //       j_calc <= j_calc + 1;
+  //       i_calc <= 0;
+  //       end else begin
+  //         i_calc <= i_calc + 1;
+  //     end
+  //   end
+  // end
 
   always_ff @(posedge clk) begin
     if (start_calc) begin
@@ -149,7 +161,7 @@ module updater (
       //              board_state[(right_col * 8) + bottom_row];  // Bottom Right Cell
 
 
-      temp_cell_state <= (board_state[(i_calc * 8) + j_calc]);
+      temp_cell_state <= (board_state[(j_calc * 8) + i_calc]);
       if ((board_state[(j_calc * 8) + i_calc] == 1'b0) && (neighbors == 4'd3)) begin
         next_board_state[(j_calc * 8) + i_calc] <= 1'b1;
         temp_cell_next_state <= 1'b1;
@@ -171,27 +183,17 @@ module updater (
         inside_dead_cell_case <= 1'b0;
       end
 
-      
-
       if (i_calc == 3'd7) begin
-        i_calc <= 3'd0;
-        if (j_calc == 3'd7)
-          j_calc <= 3'd0;
-        else
-          j_calc <= j_calc + 1;
+        j_calc <= j_calc + 1;
+        i_calc <= 0;
+        end else begin
+          i_calc <= i_calc + 1;
       end
-      else begin
-        i_calc <= i_calc + 1;
-      end
-    end
-    else begin
-      i_calc <= 3'd0;
-      j_calc <= 3'd0;
     end
   end
 
   wire cell_next_alive;
-  assign cell_next_alive = next_board_state[(i * 8) + j];
+  assign cell_next_alive = next_board_state[(j * 8) + i];
   assign next_cell_state = cell_next_alive ? 8'b0000_1111 : 8'b0000_0000;  
 
 endmodule
