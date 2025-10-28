@@ -6,7 +6,7 @@ module updater (
   output logic       done_writing,
   output logic [5:0] address,               // Address we are reading/writing from
   output logic [7:0] next_cell_state,       // Outgoing data during WRITE
-  output logic       start_writing          // Flag to memory to write
+  output logic       write                  // Flag to memory to write
 );
 
   // Board State Memory, stored in a flat 64 bit register
@@ -28,6 +28,7 @@ module updater (
 
   // Address to use internally and assigning the exposed address
   logic [5:0] board_address = 6'd0;
+  logic [5:0] calc_address  = 6'd0;
   assign address = board_address;
 
   // Counters for CALC phase
@@ -49,14 +50,14 @@ module updater (
     prev_state <= state;
   end
 
-  wire start_read   = (state == READ)  && (prev_state != READ);
-  wire start_calc   = (state == CALC)  && (prev_state != CALC);
-  wire start_write  = (state == WRITE) && (prev_state != WRITE);
-  wire write        = (state == WRITE) && (prev_state == WRITE);
+  wire done_reading;
+  wire done_calculating;
 
-  assign start_writing = write;
-  assign done_calculating = ((i_calc == 3'b111) && (j_calc == 3'b111));
-  assign done_writing = (state == IDLE)  && (prev_state != IDLE);
+  assign done_writing     = ((board_address == 6'd63) && (state == WRITE));
+  assign done_reading     = (board_address == 6'd63);
+  assign done_calculating = ((i_calc == 3'd7) && (j_calc == 3'd7));
+
+  assign write = (state == WRITE);
 
   always_comb begin
     next_state = 2'bx;
@@ -67,7 +68,7 @@ module updater (
         else
           next_state = IDLE;
       READ:
-        if (board_address == 6'd63)
+        if (done_reading)
           next_state = CALC;
         else
           next_state = READ;
@@ -77,12 +78,10 @@ module updater (
         else
           next_state = CALC;
       WRITE:
-        if (board_address == 6'd63)
+        if (done_writing)
           next_state = IDLE;
         else
           next_state = WRITE;
-      
-      default: next_state = IDLE;
     endcase
   end
 
@@ -91,11 +90,7 @@ module updater (
   end
 
   always_ff @(posedge clk) begin
-    if (start_read || start_write) begin 
-      i             <= 3'd0;
-      j             <= 3'd0;
-      board_address <= 6'd0;
-    end else if ((state == READ) || (state == WRITE)) begin
+    if ((state == READ) || (state == WRITE)) begin
       if (i == 3'd7) begin
         i <= 3'd0;
         if (j == 3'd7)
@@ -117,32 +112,35 @@ module updater (
     end
   end
 
-  logic temp_cell_next_state;
-  logic temp_cell_state;
-  logic inside_dead_cell_case;
+  always_ff @(negedge clk) begin
+    if (state == CALC && prev_state != CALC) begin
+      i_calc <= 0;
+      j_calc <= 0;
+      calc_address <= 0;
+    end
+    if (state == CALC) begin
+      if (i_calc == 3'd7) begin
+        j_calc <= j_calc + 1;
+        i_calc <= 0;
+        end else begin
+          i_calc <= i_calc + 1;
+      end
+      
+      calc_address <= calc_address + 1;
+    end
 
-  // always_ff @(posedge clk) begin
-  //   if (state == CALC) begin
-  //     if (i_calc == 3'd7) begin
-  //       j_calc <= j_calc + 1;
-  //       i_calc <= 0;
-  //       end else begin
-  //         i_calc <= i_calc + 1;
-  //     end
-  //   end
-  // end
+  end
+
+  
 
   always_ff @(posedge clk) begin
-    if (start_calc) begin
-      i_calc <= 3'd0;
-      j_calc <= 3'd0;
-    end else if (state == CALC) begin
+    if (state == CALC) begin
       left_col   = (i_calc == 3'd0) ? 3'd7 : (i_calc - 3'd1);
       right_col  = (i_calc == 3'd7) ? 3'd0 : (i_calc + 3'd1);
       top_row    = (j_calc == 3'd0) ? 3'd7 : (j_calc - 3'd1);
       bottom_row = (j_calc == 3'd7) ? 3'd0 : (j_calc + 3'd1);
 
-      neighbors =  board_state[(top_row    * 8) + left_col ] + 
+      neighbors = board_state[(top_row    * 8) + left_col ] + 
                    board_state[(top_row    * 8) + i_calc   ] + 
                    board_state[(top_row    * 8) + right_col] + 
                    board_state[(j_calc     * 8) + left_col ] + 
@@ -151,49 +149,24 @@ module updater (
                    board_state[(bottom_row * 8) + i_calc   ] + 
                    board_state[(bottom_row * 8) + right_col];
 
-      // neighbors =  board_state[(left_col  * 8) + top_row   ] + // Top Left Cell
-      //              board_state[(i_calc    * 8) + top_row   ] + // Top Middle Cell
-      //              board_state[(right_col * 8) + top_row   ] + // Top Right Cell
-      //              board_state[(left_col  * 8) + j_calc    ] + // Middle Left Cell
-      //              board_state[(right_col * 8) + j_calc    ] + // Middle Right Cell
-      //              board_state[(left_col  * 8) + bottom_row] + // Bottom Left Cell
-      //              board_state[(i_calc    * 8) + bottom_row] + // Bottom Middle Cell
-      //              board_state[(right_col * 8) + bottom_row];  // Bottom Right Cell
-
-
-      temp_cell_state <= (board_state[(j_calc * 8) + i_calc]);
-      if ((board_state[(j_calc * 8) + i_calc] == 1'b0) && (neighbors == 4'd3)) begin
-        next_board_state[(j_calc * 8) + i_calc] <= 1'b1;
-        temp_cell_next_state <= 1'b1;
-        inside_dead_cell_case <= 1'b1;
+      if ((board_state[calc_address] == 1'b0) && (neighbors == 4'd3)) begin
+        next_board_state[calc_address] <= 1'b1;
       end 
-      else if (board_state[(j_calc * 8) + i_calc] == 1'b1) begin
-        inside_dead_cell_case <= 1'b0;
+      else if (board_state[calc_address] == 1'b1) begin
         if ((neighbors < 4'd2) || (neighbors > 4'd3)) begin
-          next_board_state[(j_calc * 8) + i_calc] <= 1'b0;
-          temp_cell_next_state <= 1'b0;
+          next_board_state[calc_address] <= 1'b0;
         end else begin
-          next_board_state[(j_calc * 8) + i_calc] <= 1'b1;
-          temp_cell_next_state <= 1'b1;
+          next_board_state[calc_address] <= 1'b1;
         end
       end
       else begin
-        next_board_state[(j_calc * 8) + i_calc] <= 1'b0;
-        temp_cell_next_state <= 1'b0;
-        inside_dead_cell_case <= 1'b0;
-      end
-
-      if (i_calc == 3'd7) begin
-        j_calc <= j_calc + 1;
-        i_calc <= 0;
-        end else begin
-          i_calc <= i_calc + 1;
+        next_board_state[calc_address] <= 1'b0;
       end
     end
   end
 
   wire cell_next_alive;
-  assign cell_next_alive = next_board_state[(j * 8) + i];
+  assign cell_next_alive = next_board_state[board_address];
   assign next_cell_state = cell_next_alive ? 8'b0000_1111 : 8'b0000_0000;  
 
 endmodule

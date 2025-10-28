@@ -17,7 +17,7 @@
         localparam [2:0] TRANSMIT_PIXEL = 3'b100;
 
         localparam [8:0] TRANSMIT_CYCLES    = 9'd360;       // = 24 bits / pixel x 15 cycles / bit
-        localparam [23:0] IDLE_CYCLES       = 24'd12000000;
+        localparam [23:0] IDLE_CYCLES       = 24'd4800000;  // 0.4 Seconds
 
         logic [1:0] state = TRANSMIT_FRAME;
         logic [1:0] next_state;
@@ -96,7 +96,7 @@
                 idle_counter <= idle_counter + 1;
             end
             else begin
-                idle_counter <= 23'd0;
+                idle_counter <= 24'd0;
             end
         end
 

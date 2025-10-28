@@ -4,16 +4,20 @@
 `include "game_updater.sv"
 `include "game.sv"
 
-// led_matrix top level module
-
 module top(
     input logic     clk, 
     output logic    _48b, 
     output logic    _45a
 );
 
-    logic [7:0] white_data;
-    logic [7:0] next_state_data;
+    logic [7:0] red_data;
+    logic [7:0] green_data;
+    logic [7:0] blue_data;
+
+    logic [7:0] red_data_next;
+    logic [7:0] green_data_next;
+    logic [7:0] blue_data_next;
+
     logic done_calculating;
     logic start_calculating;
 
@@ -31,33 +35,73 @@ module top(
     logic address_select; 
 
     always_ff @(posedge clk) begin
-    if (done_calculating)
+    if (start_calculating)
         address_select <= 1'b1;
-    else if (start_calculating)
+    else if (done_calculating)
         address_select <= 1'b0;
     end
 
-    // Instance sample memory for blue channel
+    // Instance memory for red channel
     memory #(
-        .INIT_FILE      ("states/white.txt")
-    ) u3 (
+        .INIT_FILE      ("states/line.txt")
+    ) mem_red (
         .clk            (clk), 
         .write          (write),
         .read_address   (address), 
-        .write_data     (next_state_data),
-        .read_data      (white_data)
+        .write_data     (red_data_next),
+        .read_data      (red_data)
     );
 
-    updater updater (
+    // Instance game logic for red channel
+    updater updater_red (
         .clk                    (clk),
         .start_next_game_state  (start_calculating),
-        .cell_state             (white_data),
-        .done_writing           (done_calculating),
-        .address                (game_address),
-        .next_cell_state        (next_state_data),
-        .start_writing          (write)
+        .cell_state             (red_data),
+        .next_cell_state        (red_data_next)
     );
 
+    // Instance memory for green channel
+    memory #(
+        .INIT_FILE      ("states/glider.txt")
+    ) mem_green (
+        .clk            (clk), 
+        .write          (write),
+        .read_address   (address), 
+        .write_data     (green_data_next),
+        .read_data      (green_data)
+    );
+
+    // Instance game logic for green channel
+    updater updater_green (
+        .clk                    (clk),
+        .start_next_game_state  (start_calculating),
+        .cell_state             (green_data),
+        .next_cell_state        (green_data_next)
+    );
+
+    // Instance memory for blue channel
+    memory #(
+        .INIT_FILE      ("states/mwss.txt")
+    ) mem_blue (
+        .clk            (clk), 
+        .write          (write),
+        .read_address   (address), 
+        .write_data     (blue_data_next),
+        .read_data      (blue_data)
+    );
+
+    // Instance game logic for blue channel
+    updater updater_blue (
+        .clk                    (clk),
+        .start_next_game_state  (start_calculating),
+        .cell_state             (blue_data),
+        .done_writing           (done_calculating),
+        .address                (game_address),
+        .next_cell_state        (blue_data_next),
+        .write                  (write)
+    );
+
+    // Instance led matrix controller
     controller u5 (
         .clk                    (clk), 
         .finished_calculating   (done_calculating),
@@ -67,7 +111,7 @@ module top(
         .pixel                  (matrix_address)
     );
 
-    assign address = address_select ? matrix_address : game_address;
+    assign address = address_select ? game_address : matrix_address;
 
     // Instance the WS2812B output driver
     ws2812b matrix (
@@ -80,7 +124,7 @@ module top(
 
     always_ff @(posedge clk) begin
         if (load_sreg) begin
-          shift_reg <= {white_data, white_data, white_data};
+          shift_reg <= {red_data, green_data, blue_data};
         end
         else if (shift) begin
           shift_reg <= { shift_reg[22:0], 1'b0 };

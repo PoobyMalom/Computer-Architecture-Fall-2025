@@ -3,7 +3,7 @@ module memory #(
     parameter INIT_FILE = ""
 )(
     input logic clk,
-    input logic write, // logical flag for writing, always reads
+    input logic write,
     input logic [5:0] read_address,
     input logic [7:0] write_data,
     output logic [7:0] read_data
@@ -15,10 +15,12 @@ module memory #(
         $readmemh(INIT_FILE, mem);
     end
 
-    always_ff @(posedge clk) begin
-        if (write) // If write
+    always_ff @(negedge clk) begin
+        if (write) begin
             mem[read_address] <= write_data; 
-        read_data <= mem[read_address];
+        end else begin
+            read_data <= mem[read_address];
+        end
     end
 
 endmodule
