@@ -1,0 +1,226 @@
+first instruction:
+
+Hex: FEDCC0B7
+Bin: 1111 1110 1101 1100 1100 0000 1011 0111 
+NO OPCODE: Bin: 1111 1110 1101 1100 1100 0000 1
+
+OPCODE: 0110111
+INSTR: Load Upper Immediate
+
+imm[31:12] = 1111 1110 1101 1100 110
+imm_out = 1111 1110 1101 1100 1100 0000 0000 0000
+
+Test Instructions
+
+lui, U-Type, Opcode: 0110111, rd: 00001
+
+
+
+LW INSTRUCTION TEST:
+
+Hex: FFC4A303
+Bin: 111111111100 01001 010 00110 0000011
+                                                                                       dont set
+State    Name       PCW    ASrc    MWrite    IRW    RWrite    ImmSrc    ALUA    ALUB    ALUCON    RESSRC
+0        Fetch      1      0       0         1      0         xx        00      10      xxxx      10 
+
+1        Decode     0      x       0         0      0         00        01      01      xxxx      xx
+
+2        MemAdr     0      x       0         0      0         00        10      01      0000      xx
+
+3        MemRead    0      1       0         0      0         00        xx      xx      xxxx      00
+
+4        MemWB      0      x       0         0      1         00        xx      xx      xxxx      01
+
+5        MemWrite   0      1       1         0      0         01        xx      xx      xxxx      00
+
+6        ExecuteR   0      x       0         0      0         xx        10      00      xxxx      xx
+
+7        ALUWB      0      x       0         0      1         xx        xx      xx      xxxx      00
+
+8        ExecuteI   0      x       0         0      0         xx        10      01      xxxx      xx
+
+9        JAL        1      x       0         0      0         11        01      10      0000      00
+
+10       BEQ        1      x       0         0      0         10        10      00      0001      00
+
+
+GTKWAVE COMMANDS:
+
+build:
+
+iverilog -g2012 -o simv mp4_tb.sv top.sv src/*.sv
+
+sim:
+
+vvp simv
+
+run:
+
+gtkwave top.vcd memory-test.gtkw
+
+VERILATOR COMMANDS:
+
+build:
+
+verilator -Wall --timing --trace-fst -cc top.sv mp4_tb.sv memory.sv ir.sv imm_extend.sv reg_file.sv alu.sv controller.sv
+
+
+TEST PROGRAM
+--------------------------------------------------------------
+
+FIRST INSTRUCTION: lui x1, 0xFEDCC
+==============================================================
+
+Hex: FEDCC0B7
+Bin: 1111 1110 1101 1100 1100 0000 1011 0111 (op = 0110111)
+Instr (U-Type): 11111110110111001100 00001 0110111
+
+opcode: 0110111
+reg_dest: 00001 (0x1)
+imm: 11111110110111001100 (0xFEDCC)
+
+PATH: 0 -> 1 -> 11 -> 0
+
+SECOND INSTRUCTION: addi x1, x1, 0xA98
+==============================================================
+
+Hex: A9808093
+Bin: 1010 1001 1000 0000 1000 0000 1001 0011 (op = 0010011)
+Instr (I-Type): 101010011000 00001 000 00001 0010011
+
+opcode: 0010011
+reg_dest: 00001 (0x1)
+funct-3: 000
+reg_src: 00001 (0x1)
+imm: 101010011000 (A98) 
+
+PATH: 0 -> 1 -> 8 -> 7 -> 0
+
+THIRD INSTRUCTION: srli x2, x1, 4
+==============================================================
+
+Hex: 0040D113
+Bin: 0000 0000 0100 0000 1101 0001 0001 0011 (op = 0010011)
+Instr (I-Type): 000000000100 00001 101 00010 0010011
+
+opcode: 0010011
+reg_dest: 00010 (0x2)
+funct-3: 101
+reg_src: 00001 (0x1)
+imm: 000000000100 (0x004)
+
+PATH: 0 -> 1 -> 8 -> 7 -> 0
+
+FOURTH INSTRUCTION: srai x3, x1, 4
+==============================================================
+
+Hex: 4040D193
+Bin: 0100 0000 0100 0000 1101 0001 1001 0011 (op = 0010011)
+Instr (I-Type): 010000000100 00001 101 00011 0010011
+
+opcode: 0010011
+reg_dest: 00011 (0x3)
+funct-3: 101
+reg_src: 00001 (0x1)
+imm: 010000000100 (0x404)
+
+PATH: 0 -> 1 -> 8 -> 7 -> 0
+
+FIFTH INSTRUCTION: xori x4, x3, -1
+==============================================================
+
+Hex: FFF1C213
+Bin: 1111 1111 1111 0001 1010 0010 0001 0011 (op = 0010011)
+Instr (I-Type): 111111111111 00011 010 00100 0010011
+
+opcode: 0010011
+reg_dest: 00100 (0x4)
+funct-3: 010
+reg_src: 00011 (0x3)
+imm: 1111111111111 (0xFFF)
+
+PATH: 0 -> 1 -> 8 -> 7 -> 0
+
+SIXTH INSTRUCTION: addi x5, x0, 2
+==============================================================
+
+Hex: 00200293
+Bin: 0000 0000 0010 0000 0000 0010 1001 0011 (op = 0010011)
+Instr (I-Type): 000000000010 00000 000 00101 0010011
+
+opcode: 0010011
+reg_dest: 00101 (0x5)
+funct-3: 000
+reg_src: 00000 (0x0)
+imm: 000000000010 (0x002)
+
+PATH: 0 -> 1 -> 8 -> 7 -> 0
+
+SEVENTH INSTRUCTION: add x6, x5, x4
+==============================================================
+
+Hex: 004283333
+Bin: 0000 0000 0100 0010 1000 0011 0011 0011 0011 (op = 0110011)
+Instr (R-Type): 0000000 00100 00101 000 00110 0110011
+
+opcode: 0110011
+reg_dest: 00110 (0x6)
+funct-3: 000
+reg_src1: 00101 (0x5)
+reg_src2: 00100 (0x4)
+funct-7: 0000000 (0x00)
+
+PATH: 0 -> 1 -> 6 -> 7 -> 0
+
+EIGHTH INSTRUCTION: sub x7, x6, x4
+==============================================================
+
+Hex: 404303B3
+Bin: 0100 0000 0100 0011 0000 0011 1011 0011 (op = 0110011)
+Instr (R-Type): 0100000 00100 00110 000 00111 0110011
+
+opcode: 0110011
+reg_dest: 00111 (0x7)
+funct-3: 000
+reg_src1: 00110 (0x6)
+reg_src2: 00100 (0x4)
+funct-7: 0100000 (0x20)
+
+NINTH INSTRUCTION: sll x8, x4, x5
+==============================================================
+
+Hex: 00521433
+Bin: 0000 0000 0101 0010 0001 0100 0011 0011 (op = 0110011)
+Instr (R-Type): 0000000 00101 00100 001 01000 0110011
+
+opcode: 0110011
+reg_dest: 01000 (0x8)
+funct-3: 001
+reg_src1: 00100 (0x4)
+reg_src2: 00101 (0x5)
+funct-7: 0100000 (0x20)
+
+TENTH INSTRUCTION: ori x9, x8, 7
+==============================================================
+
+Hex: 00746493
+Bin: 0000 0000 0111 0100 0110 0100 1001 0011 (op = 0010011)
+Instr (I-Type): 000000000111 01000 110 01001 0010011
+
+opcode: 0010011
+reg_dest: 01001 (0x9)
+funct-3: 110
+reg_src: 01000 (0x8)
+imm: 00000000111 (0x007)
+
+ELEVENTH INSTRUCTION: auipc x10, 0x12345
+==============================================================
+
+Hex: 12345517
+Bin: 0001 0010 0011 0100 0101 0101 0001 0111 (op = 0010111)
+Instr (U-Type): 00010010001101000101 01010 0010111
+
+opcode: 0010111
+reg_dest: 01010 (0x10)
+imm: 00010010001101000101 (0x12345)
