@@ -1,0 +1,178 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Sat Dec 13 19:44:14 2025
+[*]
+[dumpfile] "/home/toby/comp-arch/mp4/top.vcd"
+[dumpfile_mtime] "Sat Dec 13 19:44:04 2025"
+[dumpfile_size] 136264
+[savefile] "/home/toby/comp-arch/mp4/memory-test.gtkw"
+[timestart] 2145190
+[size] 1854 1001
+[pos] 7840 3773
+*-14.000000 2197040 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] mp4_tb.
+[treeopen] mp4_tb.u0.
+[treeopen] mp4_tb.u0.memory.
+[sst_width] 297
+[signals_width] 339
+[sst_expanded] 1
+[sst_vpaned_height] 298
+@28
+[color] 5
+mp4_tb.u0.clk
+@22
+[color] 5
+mp4_tb.u0.dmem_data_out[31:0]
+[color] 5
+mp4_tb.u0.dmem_data_in[31:0]
+[color] 5
+mp4_tb.u0.imem_data_out[31:0]
+@200
+-
+@22
+[color] 5
+mp4_tb.u0.instr_reg[31:0]
+@200
+-
+@22
+[color] 5
+mp4_tb.u0.program_counter[31:0]
+[color] 5
+mp4_tb.u0.old_pc[31:0]
+[color] 2
+mp4_tb.u0.address[31:0]
+@28
+[color] 2
+mp4_tb.u0.op[6:0]
+[color] 2
+mp4_tb.u0.funct3[2:0]
+[color] 2
+mp4_tb.u0.funct7[6:0]
+@22
+[color] 2
+mp4_tb.u0.instr_reg[31:0]
+[color] 2
+mp4_tb.u0.program_counter[31:0]
+[color] 2
+mp4_tb.u0.imm_ext[31:0]
+@28
+[color] 2
+mp4_tb.u0.imm_src[2:0]
+@200
+-
+@28
+[color] 4
+mp4_tb.u0.CNTRL.op[6:0]
+[color] 4
+mp4_tb.u0.CNTRL.funct3[2:0]
+[color] 4
+mp4_tb.u0.CNTRL.funct7[6:0]
+[color] 4
+mp4_tb.u0.CNTRL.pc_write
+mp4_tb.u0.CNTRL.pc_update
+[color] 4
+mp4_tb.u0.CNTRL.adr_src
+[color] 4
+mp4_tb.u0.CNTRL.mem_write
+[color] 4
+mp4_tb.u0.CNTRL.ir_write
+[color] 4
+mp4_tb.u0.CNTRL.reg_write
+[color] 4
+mp4_tb.u0.CNTRL.imm_src[2:0]
+[color] 4
+mp4_tb.u0.CNTRL.alu_src_a[1:0]
+[color] 4
+mp4_tb.u0.CNTRL.alu_src_b[1:0]
+[color] 4
+mp4_tb.u0.CNTRL.result_src[1:0]
+@200
+-
+@24
+[color] 3
+mp4_tb.u0.CNTRL.state[4:0]
+@28
+[color] 3
+mp4_tb.u0.CNTRL.branch
+@200
+-
+@22
+[color] 1
+mp4_tb.u0.REG.wd[31:0]
+[color] 1
+mp4_tb.u0.data[31:0]
+mp4_tb.u0.memory.dmem_data_out[31:0]
+mp4_tb.u0.memory.dmem_data_value[31:0]
+@28
+mp4_tb.u0.memory.is_micros
+mp4_tb.u0.memory.is_dmem
+@200
+-
+@23
+mp4_tb.u0.ALU.ALUControl[4:0]
+@28
+[color] 6
+mp4_tb.u0.ALU.Branch_Con[2:0]
+@22
+[color] 6
+mp4_tb.u0.ALU.SrcA[31:0]
+[color] 6
+mp4_tb.u0.ALU.SrcB[31:0]
+[color] 6
+mp4_tb.u0.ALU.result[31:0]
+[color] 6
+mp4_tb.u0.ALU.product[63:0]
+@200
+-
+@22
+[color] 7
+mp4_tb.u0.memory.dmem0.address[9:0]
+[color] 7
+mp4_tb.u0.memory.dmem0.data_in[7:0]
+[color] 7
+mp4_tb.u0.memory.dmem0.data_out[7:0]
+@28
+[color] 7
+mp4_tb.u0.memory.dmem0.write_enable
+@200
+-
+@22
+[color] 7
+mp4_tb.u0.memory.dmem1.address[9:0]
+[color] 7
+mp4_tb.u0.memory.dmem1.data_in[7:0]
+[color] 7
+mp4_tb.u0.memory.dmem1.data_out[7:0]
+@28
+[color] 7
+mp4_tb.u0.memory.dmem1.write_enable
+@200
+-
+@22
+[color] 7
+mp4_tb.u0.memory.dmem2.address[9:0]
+[color] 7
+mp4_tb.u0.memory.dmem2.data_in[7:0]
+[color] 7
+mp4_tb.u0.memory.dmem2.data_out[7:0]
+@28
+[color] 7
+mp4_tb.u0.memory.dmem2.write_enable
+@200
+-
+@22
+[color] 7
+mp4_tb.u0.memory.dmem3.address[9:0]
+[color] 7
+mp4_tb.u0.memory.dmem3.data_in[7:0]
+[color] 7
+mp4_tb.u0.memory.dmem3.data_out[7:0]
+@28
+[color] 7
+mp4_tb.u0.memory.dmem3.write_enable
+@200
+-
+@22
+mp4_tb.u0.memory.dmem_dout[31:0]
+[pattern_trace] 1
+[pattern_trace] 0
